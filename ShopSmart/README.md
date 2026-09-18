@@ -2,8 +2,6 @@
 
 A complete, portfolio-quality full-stack e-commerce website — Electronics, Fashion, and Home & Living — built with Node.js/Express, MySQL, and a vanilla HTML/CSS/jQuery frontend.
 
-This is a brand-new, independent project. It does not modify or depend on any other project on your machine.
-
 ---
 
 ## 1. Project Structure
@@ -40,11 +38,11 @@ The Express server also serves the `frontend/` folder as static files, so the **
 
 ---
 
-## 3. MySQL Setup
+## 3. MySQL Setup (local)
 
-1. Make sure MySQL is running.
-2. Create the database and tables, then load the sample data:
+Create the database and tables, then load the sample data. Easiest via phpMyAdmin: **Import** → choose `schema.sql` → Go, then select the `shopsmart` database → **Import** → choose `seed.sql` → Go.
 
+Or from the command line:
 ```bash
 cd ShopSmart-Final/database
 mysql -u root -p < schema.sql
@@ -55,7 +53,7 @@ mysql -u root -p shopsmart < seed.sql
 
 ---
 
-## 4. Backend Setup
+## 4. Backend Setup (local)
 
 ```bash
 cd ShopSmart-Final/backend
@@ -63,66 +61,34 @@ npm install
 cp .env.example .env
 ```
 
-Open `.env` and set your real MySQL password:
-
+Edit `.env` with your real MySQL credentials:
 ```
 PORT=5000
-
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=shopsmart
 DB_PORT=3306
-
 JWT_SECRET=change_this_to_a_long_random_secret_string
 JWT_EXPIRES_IN=7d
 ```
 
 Then start the server:
-
 ```bash
 npm run dev
 ```
 
 You should see:
-
 ```
 ✅ MySQL connected successfully to database: shopsmart
 🚀 ShopSmart server running at http://localhost:5000
 ```
 
----
-
-## 5. Open the App
-
-Visit **http://localhost:5000** in your browser. That's it — frontend and backend are served together.
-
-If you prefer, you can also open the `frontend/*.html` files directly with a tool like VS Code Live Server; the frontend calls the API at `http://localhost:5000/api` regardless (see `frontend/js/config.js`), as long as the backend is running.
+Visit **http://localhost:5000** in your browser.
 
 ---
 
-## 6. Exact URLs to Test
-
-| Page | URL |
-|---|---|
-| Home | http://localhost:5000/index.html |
-| Categories | http://localhost:5000/categories.html |
-| Subcategories of Electronics | http://localhost:5000/categories.html?id=1 |
-| Products in a subcategory | http://localhost:5000/products.html?category=1&subcategory=1 |
-| All products | http://localhost:5000/products.html |
-| Search | http://localhost:5000/products.html?search=laptop |
-| Product detail | http://localhost:5000/product.html?id=1 |
-| Cart | http://localhost:5000/cart.html |
-| Login | http://localhost:5000/login.html |
-| Register | http://localhost:5000/register.html |
-| Checkout | http://localhost:5000/checkout.html |
-| Wishlist | http://localhost:5000/wishlist.html |
-| My Orders | http://localhost:5000/orders.html |
-| API health check | http://localhost:5000/api/health |
-
----
-
-## 7. API Reference
+## 5. API Reference
 
 **Products**
 - `GET /api/products` — query params: `category, subcategory, search, minPrice, maxPrice, rating, inStock, sort, page, limit`
@@ -147,31 +113,93 @@ If you prefer, you can also open the `frontend/*.html` files directly with a too
 
 ---
 
-## 8. Testing Checklist
+## 6. Testing Checklist
 
 - [ ] Homepage loads with hero, categories, featured/deals/trending rails
-- [ ] Categories page → clicking a main category shows its subcategories
-- [ ] Clicking a subcategory opens the filtered product listing
-- [ ] Products load with correct, relevant images
-- [ ] Search returns matching products
-- [ ] Price / rating / in-stock filters work and combine correctly
-- [ ] Sorting (price, rating, newest) works
-- [ ] Pagination works
+- [ ] Categories → subcategories → filtered product listing navigation works
+- [ ] Search, price/rating/in-stock filters, sorting, and pagination all work
 - [ ] Product detail page shows full info + related products
-- [ ] Add to Cart works from grid, detail page, and updates the navbar badge instantly
-- [ ] Cart page: quantity +/-, remove, clear cart, subtotal/delivery/total all correct
-- [ ] Register creates an account (bcrypt-hashed password) and logs you in
-- [ ] Login authenticates and issues a JWT
+- [ ] Add to Cart works and updates the navbar badge instantly
+- [ ] Cart: quantity +/-, remove, clear cart, totals all correct
+- [ ] Register/Login work (bcrypt-hashed password, JWT issued)
 - [ ] Wishlist requires login; add/remove persists in MySQL
-- [ ] Checkout requires login; validates every field; blocks on empty cart
-- [ ] Placing an order saves `orders` + `order_items` in MySQL, clears the cart, and redirects to My Orders
+- [ ] Checkout requires login, validates fields, blocks on empty cart
+- [ ] Placing an order saves to MySQL, clears the cart, redirects to My Orders
 - [ ] My Orders lists past orders with items, dates, and status
-- [ ] Responsive layout works on mobile, tablet, and desktop widths
+- [ ] Responsive on mobile, tablet, and desktop
 
 ---
 
-## 9. Notes
+## 7. Deploying (GitHub + Railway)
 
-- Product images are served from Unsplash's stable CDN, chosen per-subcategory to be relevant to each product type (different smartphones show different smartphone photos, sofas show sofa photos, etc.) — every URL is stored directly in `seed.sql`, and the frontend simply renders `product.image_url`.
-- Cart is stored in `localStorage` (fast, no login required to browse/add-to-cart); wishlist and orders are stored server-side in MySQL and require a logged-in user, per the spec.
-- Prices are in INR (₹). Free delivery applies above ₹500; otherwise a flat ₹49 delivery fee is added, both in the cart and at checkout.
+### 7a. One-time code change before deploying
+
+`frontend/js/config.js` should use a relative API path so the same frontend code works both locally and once deployed:
+```js
+const CONFIG = {
+  API_BASE_URL: '/api',
+  DELIVERY_THRESHOLD: 500,
+  DELIVERY_FEE: 49,
+  CURRENCY_SYMBOL: '₹'
+};
+```
+This works because Express serves the frontend and the API from the same origin, whether that's `localhost:5000` or your deployed domain.
+
+### 7b. Push to GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit: ShopSmart full-stack e-commerce app"
+```
+Confirm `.env` is not staged (`git status` should only show `.env.example`), then:
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/shopsmart-final.git
+git branch -M main
+git push -u origin main
+```
+
+### 7c. Deploy on Railway
+
+Railway hosts the Node backend and a MySQL database together in one project, auto-deploys from GitHub, and gives a free public HTTPS domain.
+
+1. **New Project → Deploy from GitHub repo** → select your repo.
+2. Service **Settings**: Root Directory = `backend`, Start Command = `npm start`.
+3. **New → Database → Add MySQL** in the same project.
+4. On the backend service's **Variables** tab, add:
+   ```
+   DB_HOST=${{MySQL.MYSQLHOST}}
+   DB_USER=${{MySQL.MYSQLUSER}}
+   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+   DB_PORT=${{MySQL.MYSQLPORT}}
+   DB_NAME=shopsmart
+   JWT_SECRET=<a long random string>
+   JWT_EXPIRES_IN=7d
+   ```
+5. Open the MySQL service's **Connect** tab, run the provided `mysql` command from your terminal, then:
+   ```sql
+   CREATE DATABASE IF NOT EXISTS shopsmart;
+   USE shopsmart;
+   source /path/to/ShopSmart-Final/database/schema.sql;
+   source /path/to/ShopSmart-Final/database/seed.sql;
+   ```
+6. **Settings → Generate Domain** to get your public URL.
+7. Visit the URL — everything should work exactly as it did locally.
+
+Railway auto-redeploys on every `git push` to `main`.
+
+### 7d. Common deployment issues
+
+| Symptom | Likely cause |
+|---|---|
+| `MySQL connection failed` in deploy logs | Env var names don't match the MySQL service's actual variable names — check its Connect/Variables tab |
+| Blank page / 404 on routes like `/product.html` | Root Directory isn't set to `backend` |
+| Products list empty | `seed.sql` wasn't imported into the Railway MySQL instance |
+
+---
+
+## 8. Notes
+
+- Product images are served from Unsplash's stable CDN, chosen per-subcategory to be relevant to each product type — every URL is stored directly in `seed.sql`.
+- Cart is stored in `localStorage`; wishlist and orders are stored server-side in MySQL and require a logged-in user.
+- Prices are in INR (₹). Free delivery above ₹500; otherwise a flat ₹49 delivery fee.

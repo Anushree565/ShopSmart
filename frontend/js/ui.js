@@ -86,9 +86,23 @@ function renderNavbarAuthState() {
         </div>
       </div>
     `);
+
     $('#logoutBtn').on('click', (e) => {
       e.preventDefault();
       logout();
+    });
+
+    // Click-to-toggle instead of hover (a hover gap between the button and
+    // menu was losing the cursor before it reached the menu items).
+    $('.nav-user-btn').off('click').on('click', function (e) {
+      e.stopPropagation();
+      $('.nav-user-menu').toggleClass('show');
+    });
+    $('.nav-user-menu').off('click').on('click', function (e) {
+      e.stopPropagation(); // clicking inside the menu shouldn't close it via the document handler
+    });
+    $(document).off('click.userMenu').on('click.userMenu', () => {
+      $('.nav-user-menu').removeClass('show');
     });
   } else {
     container.html(`<a href="login.html" class="nav-login-link"><i class="fa-solid fa-user"></i> Login</a>`);

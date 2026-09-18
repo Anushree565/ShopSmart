@@ -210,7 +210,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   display: none;
   flex-direction: column;
 }
-.nav-user-dropdown:hover .nav-user-menu { display: flex; }
+/* Click-toggled via JS (ui.js adds/removes the .show class) instead of :hover,
+   since a hover gap between the button and menu was losing the cursor. */
+.nav-user-menu.show { display: flex; }
 .nav-user-menu a {
   padding: 9px 12px;
   border-radius: var(--radius-sm);
